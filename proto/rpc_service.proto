@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package adaptive_system;
+
+import "tensorflow/core/framework/tensor.proto";
+import "tensorflow/core/framework/graph.proto";
+import "tensorflow/core/framework/tensor_shape.proto";
+
+
+message Empty {
+
+}
+
+message Names {
+    string variable_name = 1;
+    string gradient_name = 2;
+    string assign_name = 3;
+    string placeholder_assign_name = 5;
+}
+
+message QuantizationLevel{
+    int32 level_order = 1;
+}
+
+message Tuple {
+    map<string, Names> map_names = 1;
+    map<string, tensorflow.TensorProto> map_parameters = 2;
+    float lr = 3;
+    int32 interval = 4;
+    tensorflow.GraphDef graph = 5;
+    string loss_name = 6;
+    string init_name = 7;
+    string batch_placeholder_name = 8;
+    string label_placeholder_name = 9;
+    string training_op_name = 10;
+    int32 total_iter = 11;
+    int32 batch_size = 12;
+    map<int32, int32> order_to_level = 14;
+	string cross_entropy_loss_name = 15;
+    string learning_rate_placeholder_name = 16;
+    string accuracy_name = 17;
+}
+
+
+message Gradient {
+    int32 quantization_level = 1;
+    bytes quantized_tensor = 3;
+    float max = 4;
+    float min = 5;
+    tensorflow.TensorShapeProto tensor_shape = 6;
+}
+
+message GradientAccordingColumn {
+	int32 quantization_level = 1;
+	repeated bytes quantized_columns = 2;
+	repeated float maxes = 3;
+	repeated float mins = 4;
+	int32 dim1 = 5;
+	int32 dim2 = 6;
+	tensorflow.TensorProto tensor = 7;
+	bool is_quantized = 8;
+    bytes signs = 9;
+    bool is_qsgd = 10;
+}
+
+
+message NamedGradients {
+    map<string, Gradient> name_to_gradient = 1;
+}
+
+message NamedGradientsAccordingColumn {
+	map<string, GradientAccordingColumn> name_to_gradient = 1;
+}
+
+message PartialState {
+    tensorflow.TensorProto tensor = 1;
+    float loss = 2;
+}
+
+message Loss {
+    float loss = 1;
+}
+
+service SystemControl {
+
+    rpc retrieveTuple(Empty) returns (Tuple);
+    rpc sendLoss(Loss) returns (Empty);
+    rpc sendGradient(NamedGradientsAccordingColumn) returns (NamedGradientsAccordingColumn);
+    rpc sendState(PartialState) returns (QuantizationLevel);
+
+}
