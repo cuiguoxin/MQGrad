@@ -91,7 +91,7 @@ void init_everything() {
     lr = tuple.lr();
     interval = tuple.interval();
     total_iter = tuple.total_iter();
-    threshold_to_quantize = tuple.threshold_to_quantize();
+    threshold_to_quantize = 105000;
     // batch_size = tuple.batch_size();
     std::string init_name = tuple.init_name();
     batch_placeholder_name = tuple.batch_placeholder_name();
@@ -131,6 +131,7 @@ void init_everything() {
     }
     *get_tuple() = tuple;
 }
+
 // return loss and set gradient to the first parameter
 float compute_gradient_and_loss(
     std::vector<std::pair<std::string, tensorflow::Tensor>> feeds,
@@ -229,7 +230,7 @@ void do_training(std::string const& raw_data_path,
         PRINT_INFO;
         // add the gradients to variables
         apply_quantized_gradient_to_model(named_gradients_receive,
-                                          get_session(), *get_tuple(), 0.2);
+                                          get_session(), *get_tuple(), lr);
         PRINT_INFO;
     }
 }

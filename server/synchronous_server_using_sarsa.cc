@@ -134,7 +134,7 @@ class RPCServiceImpl final : public SystemControl::Service {
         _tuple.set_interval(_interval);
         _tuple.set_lr(_lr);
         _tuple.set_total_iter(_total_iter);
-        _tuple.set_threshold_to_quantize(_threshold);
+        
         _init_time_point = std::chrono::high_resolution_clock::now();
         auto now = std::chrono::system_clock::now();
         auto init_time_t = std::chrono::system_clock::to_time_t(now);
@@ -229,7 +229,7 @@ class RPCServiceImpl final : public SystemControl::Service {
                 merged_gradient, &_store_named_gradient, _level, _threshold);
             PRINT_INFO;
             apply_quantized_gradient_to_model(_store_named_gradient, _session,
-                                              _tuple);
+                                              _tuple, 0.2);
             PRINT_INFO;
             _vector_map_gradient.clear();
 
@@ -373,11 +373,10 @@ int main(int argc, char** argv) {
     std::string tuple_path = argv[6];
     std::string sarsa_path = argv[7];
     int threshold = atoi(argv[8]);
-    int sarsa_model_input_size = atoi(argv[9]);
 
     adaptive_system::RPCServiceImpl service(
         interval, learning_rate, total_iter, number_of_workers, init_level,
-        tuple_path, sarsa_path, threshold, sarsa_model_input_size);
+        tuple_path, sarsa_path, threshold, interval);
 
     ServerBuilder builder;
     // Listen on the given address without any authentication mechanism.
